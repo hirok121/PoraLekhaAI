@@ -8,10 +8,6 @@ Handles both general conversation and educational content efficiently.
 from google.adk.agents import SequentialAgent
 
 from .agents.conversation_router import conversation_router_agent
-from .agents.general_chat import general_chat_agent
-from .agents.education_agent import education_agent
-from .agents.analysis_pipeline import analysis_pipeline_agent
-from .agents.solution_pipeline import solution_pipeline_agent
 
 
 # Create the main system as a sequential agent for ADK compatibility

@@ -4,7 +4,6 @@ Core agents for the AI tutoring system
 
 from .conversation_router.agent import conversation_router_agent
 from .general_chat.agent import general_chat_agent
-from .education_agent.agent import education_agent
 from .analysis_pipeline.agent import analysis_pipeline_agent
 from .solution_pipeline.agent import solution_pipeline_agent
 from .question_clarification.agent import question_clarification_agent
@@ -17,7 +16,6 @@ from .response_formatter.agent import response_formatter_agent
 __all__ = [
     "conversation_router_agent",
     "general_chat_agent",
-    "education_agent",
     "analysis_pipeline_agent",
     "solution_pipeline_agent",
     "question_clarification_agent",
