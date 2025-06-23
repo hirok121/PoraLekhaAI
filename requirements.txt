@@ -18,6 +18,15 @@ python-dotenv>=1.0.0
 pydantic>=2.5.0
 rich>=13.7.0
 
+# Performance optimization dependencies
+cachetools>=5.3.0  # For advanced caching mechanisms
+asyncio>=3.4.3     # For concurrent processing
+hashlib            # For query fingerprinting (built-in)
+
 # Optional: Enhanced text processing
 # fasttext>=0.9.2  # For advanced language detection
 # spacy>=3.7.0     # For advanced NLP (requires model download)
+
+# Development and testing
+pytest>=7.4.0      # For testing optimization implementation
+pytest-asyncio>=0.21.0  # For async testing

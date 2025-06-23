@@ -13,7 +13,21 @@ from .knowledge_retriever.agent import knowledge_retriever_agent
 from .solution_generator.agent import solution_generator_agent
 from .response_formatter.agent import response_formatter_agent
 
+# Import optimized components
+from .optimized_system import (
+    optimized_tutoring_system,
+    performance_monitor_agent,
+)
+from .caching.smart_cache_agent import smart_caching_agent
+from .fast_track.fast_track_agent import (
+    fast_track_educational_agent,
+    query_classifier_agent,
+)
+from .analysis_pipeline.enhanced_agent import enhanced_analysis_pipeline_agent
+from .solution_pipeline.optimized_agent import optimized_solution_pipeline_agent
+
 __all__ = [
+    # Original agents
     "conversation_router_agent",
     "general_chat_agent",
     "analysis_pipeline_agent",
@@ -24,4 +38,13 @@ __all__ = [
     "knowledge_retriever_agent",
     "solution_generator_agent",
     "response_formatter_agent",
+    # Optimized system components
+    "optimized_tutoring_system",
+    "gradual_optimization_system",
+    "performance_monitor_agent",
+    "smart_caching_agent",
+    "fast_track_educational_agent",
+    "query_classifier_agent",
+    "enhanced_analysis_pipeline_agent",
+    "optimized_solution_pipeline_agent",
 ]
