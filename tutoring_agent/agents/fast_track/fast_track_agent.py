@@ -10,10 +10,10 @@ from google.adk.tools import FunctionTool
 import re
 
 
-# Simple calculator function for basic math
+# Simple calculator function for basic math with explanations
 def simple_calculator(expression: str) -> str:
     """
-    Safely evaluate simple mathematical expressions
+    Safely evaluate simple mathematical expressions with step-by-step explanation
     """
     try:
         # Remove spaces and validate expression
@@ -25,50 +25,165 @@ def simple_calculator(expression: str) -> str:
 
         # Evaluate safely
         result = eval(expr)
-        return f"{expression} = {result}"
+
+        # Provide explanation based on operation type
+        explanation = ""
+        if (
+            "+" in expr
+            and expr.count("+") == 1
+            and "*" not in expr
+            and "/" not in expr
+            and "-" not in expr
+        ):
+            parts = expr.split("+")
+            explanation = f"Adding {parts[0]} and {parts[1]} together: "
+        elif (
+            "-" in expr
+            and expr.count("-") == 1
+            and "*" not in expr
+            and "/" not in expr
+            and "+" not in expr
+        ):
+            parts = expr.split("-")
+            explanation = f"Subtracting {parts[1]} from {parts[0]}: "
+        elif (
+            "*" in expr
+            and expr.count("*") == 1
+            and "+" not in expr
+            and "/" not in expr
+            and "-" not in expr
+        ):
+            parts = expr.split("*")
+            explanation = f"Multiplying {parts[0]} by {parts[1]}: "
+        elif (
+            "/" in expr
+            and expr.count("/") == 1
+            and "+" not in expr
+            and "*" not in expr
+            and "-" not in expr
+        ):
+            parts = expr.split("/")
+            explanation = f"Dividing {parts[0]} by {parts[1]}: "
+        else:
+            explanation = f"Calculating the expression {expression}: "
+
+        return f"{explanation}{expression} = {result}"
     except:
         return f"Cannot calculate: {expression}"
 
 
-# Quick definition lookup function
+# Quick definition lookup function with detailed explanations
 def quick_definition_lookup(term: str, subject: str = "general") -> str:
     """
-    Provide quick definitions for common educational terms
+    Provide quick definitions with explanations for common educational terms
     """
     definitions = {
-        # Math terms
-        "algebra": "A branch of mathematics that uses letters and symbols to represent numbers and quantities in formulas and equations.",
-        "geometry": "The branch of mathematics concerned with the properties and relations of points, lines, surfaces, and solids.",
-        "calculus": "Advanced mathematics involving rates of change and accumulation of quantities.",
-        # Science terms
-        "photosynthesis": "The process by which plants use sunlight to synthesize foods from carbon dioxide and water.",
-        "gravity": "The force that attracts objects toward the center of the Earth or toward any other physical body having mass.",
-        "atom": "The basic unit of a chemical element, consisting of protons, neutrons, and electrons.",
-        # General academic terms
-        "hypothesis": "A proposed explanation for a phenomenon, used as a starting point for investigation.",
-        "analysis": "Detailed examination of the elements or structure of something.",
+        # Math terms with explanations
+        "algebra": {
+            "definition": "A branch of mathematics that uses letters and symbols to represent numbers and quantities in formulas and equations.",
+            "explanation": "For example, in the equation 'x + 5 = 10', the letter 'x' represents an unknown number that we need to find. Algebra helps us solve for these unknowns systematically.",
+        },
+        "geometry": {
+            "definition": "The branch of mathematics concerned with the properties and relations of points, lines, surfaces, and solids.",
+            "explanation": "Geometry helps us understand shapes, sizes, and spatial relationships. For instance, it teaches us how to calculate the area of a rectangle (length × width) or the circumference of a circle (2πr).",
+        },
+        "calculus": {
+            "definition": "Advanced mathematics involving rates of change and accumulation of quantities.",
+            "explanation": "Calculus has two main parts: derivatives (which measure how fast something changes) and integrals (which measure total accumulation). It's used in physics, engineering, and many other fields.",
+        },
+        # Science terms with explanations
+        "photosynthesis": {
+            "definition": "The process by which plants use sunlight to synthesize foods from carbon dioxide and water.",
+            "explanation": "This process occurs in chloroplasts and can be summarized as: 6CO₂ + 6H₂O + sunlight → C₆H₁₂O₆ + 6O₂. Plants essentially 'eat' sunlight and produce oxygen as a byproduct, which is why they're crucial for life on Earth.",
+        },
+        "gravity": {
+            "definition": "The force that attracts objects toward the center of the Earth or toward any other physical body having mass.",
+            "explanation": "Gravity is why objects fall downward and why we stay on the ground. The more massive an object, the stronger its gravitational pull. Earth's gravity accelerates falling objects at 9.8 m/s².",
+        },
+        "atom": {
+            "definition": "The basic unit of a chemical element, consisting of protons, neutrons, and electrons.",
+            "explanation": "Think of an atom like a tiny solar system: the nucleus (protons and neutrons) is at the center, and electrons orbit around it. The number of protons determines what element it is.",
+        },
+        # General academic terms with explanations
+        "hypothesis": {
+            "definition": "A proposed explanation for a phenomenon, used as a starting point for investigation.",
+            "explanation": "A hypothesis is like an educated guess that can be tested. It should be specific and measurable. For example: 'Plants grow taller when given more sunlight' is a testable hypothesis.",
+        },
+        "analysis": {
+            "definition": "Detailed examination of the elements or structure of something.",
+            "explanation": "Analysis involves breaking down complex information into smaller parts to understand it better. In literature, you might analyze themes and characters; in science, you might analyze experimental data.",
+        },
     }
 
     term_lower = term.lower()
     if term_lower in definitions:
-        return f"{term}: {definitions[term_lower]}"
+        info = definitions[term_lower]
+        return f"**{term}:** {info['definition']}\n\n**Explanation:** {info['explanation']}"
     else:
         return f"Quick definition not available for '{term}'. This may require detailed research."
+
+
+# Formula explanation function
+def formula_explainer(formula_name: str) -> str:
+    """
+    Provide common formulas with explanations of when and how to use them
+    """
+    formulas = {
+        "area of rectangle": {
+            "formula": "A = length × width",
+            "explanation": "This formula calculates the space inside a rectangle. Multiply the length by the width to find how many unit squares fit inside.",
+            "example": "For a rectangle that is 5 meters long and 3 meters wide: A = 5 × 3 = 15 square meters",
+        },
+        "area of circle": {
+            "formula": "A = πr²",
+            "explanation": "This calculates the area of a circle using its radius (r). π (pi) ≈ 3.14159.",
+            "example": "For a circle with radius 4 cm: A = π × 4² = π × 16 ≈ 50.27 square cm",
+        },
+        "circumference of circle": {
+            "formula": "C = 2πr",
+            "explanation": "This finds the distance around a circle using its radius (r).",
+            "example": "For a circle with radius 3 m: C = 2 × π × 3 ≈ 18.85 meters",
+        },
+        "pythagorean theorem": {
+            "formula": "a² + b² = c²",
+            "explanation": "In a right triangle, the square of the longest side (hypotenuse) equals the sum of squares of the other two sides.",
+            "example": "If two sides are 3 and 4 units: 3² + 4² = 9 + 16 = 25, so c = √25 = 5 units",
+        },
+        "distance formula": {
+            "formula": "d = √[(x₂-x₁)² + (y₂-y₁)²]",
+            "explanation": "This calculates the straight-line distance between two points on a coordinate plane.",
+            "example": "Distance between points (1,2) and (4,6): d = √[(4-1)² + (6-2)²] = √[9 + 16] = √25 = 5 units",
+        },
+        "slope": {
+            "formula": "m = (y₂-y₁)/(x₂-x₁)",
+            "explanation": "Slope measures how steep a line is - the change in y divided by the change in x.",
+            "example": "For points (2,3) and (5,9): m = (9-3)/(5-2) = 6/3 = 2 (the line rises 2 units for every 1 unit right)",
+        },
+    }
+
+    formula_key = formula_name.lower().strip()
+    if formula_key in formulas:
+        info = formulas[formula_key]
+        return f"**{formula_name.title()}:**\n\n**Formula:** {info['formula']}\n\n**Explanation:** {info['explanation']}\n\n**Example:** {info['example']}"
+    else:
+        return f"Formula explanation not available for '{formula_name}'. This may require detailed research."
 
 
 # Create function tools
 calculator_tool = FunctionTool(func=simple_calculator)
 definition_tool = FunctionTool(func=quick_definition_lookup)
+formula_tool = FunctionTool(func=formula_explainer)
+formula_tool = FunctionTool(func=formula_explainer)
 
 # Fast-track educational agent
 fast_track_educational_agent = LlmAgent(
     name="FastTrackEducationalAgent",
     model="gemini-2.0-flash",
     instruction="""
-    You are a fast-track educational agent designed to handle simple educational queries quickly and efficiently.
+    You are a fast-track educational agent designed to handle simple educational queries quickly and efficiently WITH clear explanations.
 
     **Your Purpose:**
-    Provide immediate, accurate responses to basic educational questions without complex processing pipeline overhead.
+    Provide immediate, accurate responses to basic educational questions with helpful explanations to enhance learning, without complex processing pipeline overhead.
 
     **Handle These Query Types Quickly:**
     
@@ -77,91 +192,148 @@ fast_track_educational_agent = LlmAgent(
        - Simple algebraic equations: "solve 2x + 5 = 13"
        - Basic geometry: area, perimeter calculations
        - Use the calculator tool for mathematical expressions
+       - ALWAYS explain the mathematical process or reasoning
     
     2. **Quick Definitions:**
        - Common academic terms and concepts
        - Basic scientific definitions
        - Mathematical terminology
        - Use the definition lookup tool when available
+       - Provide context and examples to make definitions clearer
     
     3. **Factual Questions:**
        - Simple "what is..." questions
        - Basic scientific facts
        - Mathematical formulas and principles
        - Historical dates and events
-    
-    4. **Formula Requests:**
+       - Include brief explanations of WHY or HOW when relevant
+      4. **Formula Requests:**
        - Area and volume formulas
        - Basic physics equations
        - Mathematical identities
        - Chemical formulas for common compounds
+       - Explain when and how to use each formula
+       - Use the formula explainer tool for common mathematical formulas
     
     **Response Guidelines:**
-    - Provide direct, clear answers
-    - Include brief explanations when helpful
+    - Provide direct, clear answers WITH explanations
+    - Always include brief explanations to help students understand
     - Use appropriate academic language for the grade level
     - Support both Bengali and English responses
-    - Be concise but complete
+    - Be educational, not just informative
+    - Use examples and analogies when helpful
     - If the question is too complex, route to full pipeline
     
+    **Explanation Style:**
+    - Start with the direct answer
+    - Follow with "Here's why:" or "Explanation:" 
+    - Use simple, clear language
+    - Include examples when possible
+    - Connect to real-world applications when relevant
+    
     **Routing Decision:**
-    - If you can answer completely and confidently: Provide full response
-    - If partial answer possible: Give what you can and suggest further help
+    - If you can answer completely and confidently: Provide full response WITH explanation
+    - If partial answer possible: Give what you can, explain it, and suggest further help
     - If too complex: Return "ROUTE_TO_FULL_PIPELINE" for complex processing
     
     **Examples:**
-    - "What is 15 × 8?" → Direct calculation
-    - "Define photosynthesis" → Quick definition with brief explanation
-    - "Area of rectangle formula" → A = length × width
+    - "What is 15 × 8?" → "15 × 8 = 120. Explanation: We're multiplying 15 by 8, which means adding 15 to itself 8 times, or adding 8 to itself 15 times."
+    - "Define photosynthesis" → Provide definition + explanation of the process and why it's important
+    - "Area of rectangle formula" → "A = length × width. Explanation: This formula works because area measures how much space is inside a shape, and rectangles are made of rows and columns of unit squares."
     - "Solve complex differential equation" → ROUTE_TO_FULL_PIPELINE
     
-    Remember: Speed and accuracy are your priorities. Provide immediate value to students.
+    Remember: Speed, accuracy, AND educational value are your priorities. Help students understand, not just get answers.
     """,
-    description="Fast-track agent for simple educational queries, providing 50-70% faster responses for basic questions",
-    tools=[calculator_tool, definition_tool],
+    description="Fast-track educational agent for simple queries, providing 50-70% faster responses with clear explanations for basic questions",
+    tools=[calculator_tool, definition_tool, formula_tool],
     output_key="fast_track_response",
 )
 
-# Simple query classifier to determine if fast-track is appropriate
+# Enhanced query classifier with advanced mathematical recognition
 query_classifier_agent = LlmAgent(
     name="QueryClassifierAgent",
     model="gemini-2.0-flash",
     instruction="""
-    Classify educational queries for optimal routing:
+    Classify educational queries for optimal routing with enhanced mathematical and physics recognition:
     
     **Classification Categories:**
     
     1. **SIMPLE_EDUCATIONAL** (Route to Fast-Track):
-       - Basic calculations and arithmetic
-       - Simple definitions and explanations
-       - Common formulas and facts
-       - Single-concept questions
-       - Questions answerable in 1-2 sentences
+       - Basic arithmetic operations (+, -, ×, ÷)
+       - Single-step algebraic solutions
+       - Simple unit conversions
+       - Basic geometry area/perimeter calculations
+       - Definition requests for simple terms
+       - Memorized formulas (like quadratic formula, basic physics equations)
+       - Questions answerable in 1-2 sentences without derivation
     
     2. **COMPLEX_EDUCATIONAL** (Route to Full Pipeline):
-       - Multi-step problem solving
-       - Detailed explanations required
-       - Complex analysis or synthesis
-       - Questions requiring research
-       - Pedagogical step-by-step teaching needed
+       ⚠️ **Mathematical Physics Indicators** (ALWAYS Complex):
+       - Parametric equations: x(t), y(t), z(t), r(t) with time parameter
+       - Calculus applications: derivatives, integrals, differential equations
+       - Vector calculus: velocity, acceleration, displacement vectors
+       - 3D motion analysis and kinematics
+       - Trigonometric functions combined with exponentials: sin(at), cos(bt), e^(-ct)
+       - Natural logarithms in equations: ln(t+1), log expressions
+       - Motion analysis: position, velocity, acceleration, jerk calculations
+       - Rate of change problems requiring differentiation
+       - Particle motion, trajectory analysis, parametric curves
+       - Physics problems involving mathematical modeling
+       
+       📚 **Other Complex Indicators**:
+       - Multi-step problem solving requiring derivations
+       - Step-by-step mathematical proofs or explanations
+       - Complex analysis, synthesis, or integration of concepts
+       - Problems requiring multiple mathematical techniques
+       - Questions needing pedagogical step-by-step teaching
+       - Research-heavy topics requiring detailed explanations
+       - Advanced chemistry calculations (equilibrium, thermodynamics)
+       - Advanced biology processes (genetics, biochemistry)
     
     3. **GENERAL** (Route to General Chat):
-       - Casual conversation
-       - Greetings and social interaction
-       - Non-academic topics
+       - Casual conversation and greetings
+       - Social interaction and small talk
+       - Questions about AI capabilities
+       - Non-academic personal topics
+       - Weather, entertainment, general life advice
+    
+    **Mathematical Physics Detection Rules:**
+    🔍 **HIGH PRIORITY COMPLEX INDICATORS:**
+    - ANY mention of parametric equations with functions of t
+    - Derivatives or integrals in context (d/dt, ∫, differentiation)
+    - Vector notation (î, ĵ, k̂, or vector symbols)
+    - Combination of trigonometric + exponential + polynomial functions
+    - Motion terminology: velocity, acceleration, jerk, trajectory, particle motion
+    - 3D space references: x(t), y(t), z(t) coordinate functions
+    - Time-dependent mathematical expressions
+    - Rate problems requiring calculus
     
     **Response Format:**
     ```json
     {
         "classification": "SIMPLE_EDUCATIONAL|COMPLEX_EDUCATIONAL|GENERAL",
         "confidence": 0.0-1.0,
-        "reasoning": "brief explanation of classification",
-        "estimated_processing_time": "immediate|fast|standard|complex"
+        "reasoning": "brief explanation of classification with specific indicators found",
+        "estimated_processing_time": "immediate|fast|standard|complex",
+        "detected_mathematical_concepts": ["list", "of", "concepts", "if", "any"]
     }
     ```
     
-    **Optimization Goal:**
-    Route as many queries as possible to fast-track processing while maintaining quality.
+    **Examples for Reference:**
+    
+    ✅ **COMPLEX_EDUCATIONAL Examples:**
+    - "A particle moves along x(t) = 2cos(3t) + t², y(t) = 3sin(2t) - e^(-t/2)..." → COMPLEX (parametric motion)
+    - "Find the velocity and acceleration of the particle..." → COMPLEX (calculus applications)
+    - "Derive the equation for..." → COMPLEX (requires derivation)
+    - "Solve the differential equation dy/dx = ..." → COMPLEX (calculus)
+    - "A projectile is launched with initial velocity..." → COMPLEX (physics kinematics)
+    
+    ✅ **SIMPLE_EDUCATIONAL Examples:**
+    - "What is 2 + 3?" → SIMPLE (basic arithmetic)
+    - "Convert 5 meters to centimeters" → SIMPLE (unit conversion)
+    - "What is the quadratic formula?" → SIMPLE (memorized formula)
+    
+    **Critical Rule:** When in doubt between SIMPLE and COMPLEX, especially with mathematical content, err on the side of COMPLEX to ensure proper detailed analysis.
     """,
     description="Intelligent query classifier for optimal routing and performance",
     output_key="query_classification",

@@ -8,11 +8,7 @@ Handles casual chat without invoking complex tutoring agents.
 from google.adk.agents import Agent
 from google.adk.agents.llm_agent import LlmAgent
 from ..analysis_pipeline.agent import analysis_pipeline_agent
-from ..caching.smart_cache_agent import smart_caching_agent
-from ..fast_track.fast_track_agent import (
-    fast_track_educational_agent,
-    query_classifier_agent,
-)
+from ..fast_track.fast_track_agent import fast_track_educational_agent
 
 
 # Create new general chat instance for optimized system
@@ -22,7 +18,6 @@ general_chat_agent = Agent(
     instruction="""You are a General Chat Agent for an AI tutoring system designed to help Bangladeshi students.
 
 **Primary Role**: Handle casual conversations, greetings, and non-academic interactions with warmth and friendliness while gently guiding users toward educational topics.
-
 **Core Capabilities**:
 
 1. **Friendly Greetings & Introductions**
@@ -104,47 +99,92 @@ Always maintain an encouraging, supportive tone that makes students feel comfort
 )
 
 
-# Optimized conversation router with all enhancements integrated
 conversation_router = Agent(
     name="ConversationRouter",
     model="gemini-2.0-flash",
     instruction="""
-    You are the main conversation router for an optimized AI tutoring system.
+    You are the main conversation router for an optimized AI tutoring system with enhanced mathematical and physics problem recognition.
 
-    **Enhanced Routing Strategy:**
+    **State-Based Routing with Enhanced Query Classification:**
+
+    {query_classification}
+
+    Based on the classification results, respond appropriately to all types of queries with special attention to complex mathematical and physics problems.
     
-    1. **Initial Classification:**
-       - GENERAL: Casual conversation → Direct to general chat
-       - EDUCATIONAL: Academic content → Check cache and complexity
-    
-    2. **Cache-First Approach:**
-       - For educational queries, check cache first
-       - High confidence cache hits → Return cached response
-       - Low confidence or cache miss → Route to appropriate pipeline
-    
-    3. **Complexity-Based Routing:**
-       - SIMPLE_EDUCATIONAL → Fast-track agent (50-70% faster)
-       - COMPLEX_EDUCATIONAL → Enhanced pipeline with parallel processing
-       - UNCLEAR → Clarification agent
-    
-    4. **Performance Optimization:**
-       - Minimize processing steps for simple queries
-       - Use parallel processing for complex queries
-       - Cache successful responses for future use
-       - Monitor and report performance metrics
-    
-    **Routing Decisions:**
-    - optimized_general_chat_agent: For casual conversation
-    - smart_caching_agent: Check cache for educational queries
-    - fast_track_educational_agent: For simple educational questions
-    - enhanced_analysis_pipeline_agent: For complex educational processing
-      Your goal is to provide the fastest possible accurate response while maintaining educational quality.
+    example query_classification state:
+    ```json
+    query_classification={
+        "classification": "SIMPLE_EDUCATIONAL|COMPLEX_EDUCATIONAL|GENERAL",
+        "confidence": 0.0-1.0,
+        "reasoning": "brief explanation of classification with specific indicators found",
+        "estimated_processing_time": "immediate|fast|standard|complex",
+        "detected_mathematical_concepts": ["list", "of", "concepts", "if", "any"]
+    }
+
+    **Enhanced Routing Logic Based on Classification State:**
+
+    **1. GENERAL Classification:**
+    - Route to general_chat_agent for casual conversations, greetings, and social interactions
+    - Handle friendly chitchat, AI identity questions, and motivational support
+    - Provide warm, encouraging responses that guide users toward educational topics
+    - Fastest response path with immediate processing
+
+    **2. SIMPLE_EDUCATIONAL Classification:**
+    - If confidence >= 0.8: Route to fast_track_educational_agent
+      * Handle basic calculations, simple definitions, common formulas
+      * Provide quick educational responses with clear explanations
+      * Optimize for speed while maintaining educational quality
+    - If confidence < 0.8: Route to analysis_pipeline_agent
+      * Use full processing pipeline for accuracy assurance
+      * Handle edge cases that need detailed analysis
+
+    **3. COMPLEX_EDUCATIONAL Classification:**
+    - **ALWAYS route to analysis_pipeline_agent** - No exceptions
+    - Special handling for mathematical physics problems:
+      * Parametric equations with time-dependent functions
+      * Calculus applications (derivatives, integrals, differential equations)
+      * Vector analysis (velocity, acceleration, displacement)
+      * 3D motion and kinematics problems
+      * Complex mathematical modeling and analysis
+    - Use comprehensive educational processing with detailed step-by-step teaching
+    - Prioritize mathematical accuracy and pedagogical depth over speed
+    - Ensure proper mathematical notation and LaTeX formatting
+
+    **Mathematical Physics Priority Rules:**
+    🔥 **CRITICAL**: Any query containing mathematical physics indicators (parametric equations, calculus operations, vector analysis, motion problems) MUST be routed to analysis_pipeline_agent regardless of other factors.
+
+    **Examples of Mathematical Physics Queries Requiring Complex Processing:**
+    - Parametric motion equations: x(t) = f(t), y(t) = g(t), z(t) = h(t)
+    - Derivative calculations: finding velocity, acceleration, jerk
+    - Vector analysis: position vectors, velocity vectors, acceleration vectors
+    - Rate of change problems requiring differentiation
+    - Trajectory analysis and particle motion
+    - Any combination of trigonometric, exponential, and polynomial functions
+
+    **State Access Pattern:**
+    1. Access query_classification state from query_classifier_agent output
+    2. Read classification, confidence, reasoning, estimated_processing_time, and detected_mathematical_concepts
+    3. Check for mathematical physics indicators in detected_mathematical_concepts
+    4. Apply routing decision with priority on mathematical complexity
+    5. Route to appropriate sub-agent for optimal response
+
+    **Response Strategy:**
+    - For GENERAL: Friendly, encouraging, with gentle educational redirection
+    - For SIMPLE_EDUCATIONAL: Quick, accurate, with clear explanations
+    - For COMPLEX_EDUCATIONAL: Comprehensive, mathematically rigorous, step-by-step with proper notation
+
+    **Quality Assurance for Mathematical Content:**
+    - Ensure proper mathematical symbols and LaTeX formatting
+    - Provide step-by-step derivations when needed
+    - Include both analytical and numerical approaches where appropriate
+    - Maintain pedagogical clarity while ensuring mathematical rigor
+
+    Your goal is to provide the most appropriate response pathway based on the enhanced query classification, with special emphasis on correctly identifying and routing complex mathematical and physics problems to ensure they receive the detailed, accurate analysis they require.
     """,
-    description="Optimized main router with caching, fast-track routing, and performance monitoring",
+    description="State-based conversation router using query classification output for optimal routing decisions",
     sub_agents=[
         general_chat_agent,  # General conversation handling
-        smart_caching_agent,  # Intelligent caching system
         fast_track_educational_agent,  # Fast processing for simple queries
-        analysis_pipeline_agent,  #  analysis with parallel processing
+        analysis_pipeline_agent,  # Enhanced analysis with parallel processing
     ],
 )

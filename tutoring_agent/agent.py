@@ -9,9 +9,7 @@ from google.adk.agents import SequentialAgent, ParallelAgent
 from google.adk.agents.llm_agent import LlmAgent
 
 # Import optimized components from the agents module
-from .agents import (
-    conversation_router,
-)
+from .agents import conversation_router, query_classifier_agent
 
 # Performance monitoring agent
 performance_monitor_agent = LlmAgent(
@@ -79,6 +77,7 @@ root_agent = SequentialAgent(
     achieving dramatic performance improvements through proven ADK patterns.
     """,
     sub_agents=[
+        query_classifier_agent,  # Intelligent query classification
         conversation_router,  # Main optimized routing with all enhancements
         performance_monitor_agent,  # Performance tracking and optimization
     ],
