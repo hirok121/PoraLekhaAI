@@ -38,9 +38,37 @@ A comprehensive multi-agent AI tutoring system for Bangladeshi students (grades 
 
 ## 🧩 Core Agent Workflow
 
-The system uses a **multi-agent architecture** with specialized agents working in sequence:
+The system uses a **smart routing multi-agent architecture** with specialized agents working in sequence:
 
-### 1. **Language Routing Agent**
+### 🔀 Smart Conversation Routing
+
+**NEW: Efficient conversation handling with intelligent routing**
+
+#### 1. **Conversation Router Agent**
+
+**Description**: Determines if input is general conversation or educational content
+
+- Classifies input as GENERAL (casual chat) or EDUCATIONAL (academic questions)
+- Handles general conversation directly with friendly responses
+- Routes educational content to specialized tutoring agents
+- Supports bilingual Bengali/English input
+- Provides immediate responses for casual interactions
+
+#### 2. **Question Clarification Agent**
+
+**Description**: Helps clarify unclear or incomplete educational questions
+
+- Identifies vague or ambiguous questions
+- Guides students to provide more specific information
+- Asks targeted clarification questions with examples
+- Ensures questions have enough context for meaningful help
+- Prevents processing of unclear educational requests
+
+### 🎓 Educational Processing Pipeline
+
+**(Activated only for clear educational questions)**
+
+#### 3. **Language Routing Agent**
 
 **Description**: Detects input language and routes text to appropriate processing pipelines
 
@@ -49,7 +77,7 @@ The system uses a **multi-agent architecture** with specialized agents working i
 - Ensures output language matches input language
 - Routes to language-specific processing chains
 
-### 2. **Question Analysis Agent**
+#### 4. **Question Analysis Agent**
 
 **Description**: Analyzes and categorizes student questions for appropriate handling
 
@@ -59,7 +87,7 @@ The system uses a **multi-agent architecture** with specialized agents working i
 - Extracts key concepts and mathematical expressions
 - Assesses difficulty level and confidence
 
-### 3. **Knowledge Retrieval Agent**
+#### 5. **Knowledge Retrieval Agent**
 
 **Description**: Searches for relevant educational content using Google Search integration
 
@@ -69,7 +97,7 @@ The system uses a **multi-agent architecture** with specialized agents working i
 - Retrieves curriculum-aligned information
 - Synthesizes search results into key information
 
-### 4. **Solution Generation Agent**
+#### 6. **Solution Generation Agent**
 
 **Description**: Creates step-by-step solutions and pedagogically sound explanations
 
@@ -79,7 +107,7 @@ The system uses a **multi-agent architecture** with specialized agents working i
 - Integrates cultural context and real-world applications
 - Follows educational best practices for the identified grade level
 
-### 5. **Response Formatting Agent**
+#### 7. **Response Formatting Agent**
 
 **Description**: Formats final responses with proper language, math, and educational structure
 
@@ -91,45 +119,72 @@ The system uses a **multi-agent architecture** with specialized agents working i
 
 ## 🏗️ Agent Architecture
 
-The system uses a **sequential agent pipeline** with intelligent orchestration:
+The system uses a **smart routing sequential agent pipeline** with intelligent orchestration:
 
 ```
 Root Tutoring Agent (Sequential)
 │
-├── 1. Language Routing Agent
+├── 1. Conversation Router Agent
+│   ├── Input Classification (General vs Educational)
+│   ├── Quick Response Generation (for General)
+│   ├── Educational Routing Decision
+│
+├── 2. Question Clarification Agent
+│   ├── Clarity Assessment
+│   ├── Clarification Question Generation
+│   ├── Continuation Decision
+│
+├── 3. Language Routing Agent
 │   ├── Language Detection (Bengali/English)
 │   ├── Text Normalization & Tokenization
 │   ├── Input Validation & Enhancement
 │   └── Language-Specific Processing Pipeline Setup
 │
-├── 2. Question Analysis Agent
+├── 4. Question Analysis Agent
 │   ├── Subject Classification (math, physics, chemistry, biology)
 │   ├── Grade Level Detection (6-8, 9-10, 11-12)
 │   ├── Question Type Analysis (problem_solving, conceptual, homework_help)
 │   ├── Mathematical Expression Extraction
 │   └── Difficulty Assessment & Confidence Scoring
 │
-├── 3. Knowledge Retrieval Agent
+├── 5. Knowledge Retrieval Agent
 │   ├── Google Search Integration
 │   ├── Educational Content Discovery
 │   ├── Grade-Appropriate Resource Finding
 │   ├── Example and Explanation Retrieval
 │   └── Information Synthesis & Relevance Scoring
 │
-├── 4. Solution Generation Agent
+├── 6. Solution Generation Agent
 │   ├── Step-by-Step Problem Solving
 │   ├── Conceptual Explanations with Examples
 │   ├── Socratic Questioning Implementation
 │   ├── Cultural Context Integration
 │   └── Pedagogical Best Practices Application
 │
-└── 5. Response Formatting Agent
+└── 7. Response Formatting Agent
     ├── Bengali/English Text Formatting
     ├── Mathematical Expression Rendering (LaTeX)
     ├── Educational Structure Organization
     ├── Visual Element Integration
     └── Final Quality Assurance & Validation
 ```
+
+### 🔄 Processing Flow
+
+**General Conversation Flow:**
+
+- Input → Conversation Router → Quick Response (Steps 1-2 only)
+- Efficient, immediate responses for casual chat
+
+**Educational Question Flow:**
+
+- Input → Conversation Router → Question Clarification → Full Pipeline (All 7 steps)
+- Complete educational processing for academic questions
+
+**Unclear Question Flow:**
+
+- Input → Conversation Router → Question Clarification → Clarification Response
+- Helps students refine their questions before processing
 
 ### Agent Orchestration
 
@@ -151,6 +206,12 @@ poralekhAI/
 │   │
 │   ├── agents/                     # Core agent modules
 │   │   ├── __init__.py
+│   │   ├── conversation_router/    # NEW: General vs educational routing
+│   │   │   ├── __init__.py
+│   │   │   └── agent.py
+│   │   ├── question_clarification/ # NEW: Question clarification and improvement
+│   │   │   ├── __init__.py
+│   │   │   └── agent.py
 │   │   ├── language_router/        # Language detection and routing
 │   │   │   ├── __init__.py
 │   │   │   └── agent.py
@@ -172,6 +233,7 @@ poralekhAI/
 │       └── text_processing.py      # Language detection, math parsing, formatting
 │
 ├── requirements.txt                # Core dependencies for ADK and text processing
+├── enhanced_demo.py               # NEW: Smart routing demonstration
 ├── simple_demo.py                 # Basic architecture demonstration
 ├── text_processing_demo.py        # Text processing capabilities demo
 └── README.md
@@ -196,17 +258,46 @@ GOOGLE_API_KEY=your_google_api_key_here
 
 ### Demo Scripts
 
+Run the enhanced demo with conversation routing:
+
+```bash
+python enhanced_demo.py
+```
+
 Run the text processing capabilities demo:
 
 ```bash
 python text_processing_demo.py
 ```
 
-Or run the full agent architecture demo (requires Google ADK setup):
+Or run the basic agent architecture demo (requires Google ADK setup):
 
 ```bash
 python simple_demo.py
 ```
+
+### 🎯 Key Benefits of New Architecture
+
+**🔄 Smart Routing System:**
+
+- General conversation handled instantly without complex processing
+- Educational questions get full expert analysis
+- Unclear questions receive helpful clarification
+- Efficient resource usage - AI agents only activated when needed
+
+**💬 Enhanced User Experience:**
+
+- Friendly responses to casual greetings and chat
+- Helpful guidance for unclear questions
+- Seamless bilingual support (Bengali/English)
+- Appropriate response types for different input types
+
+**⚡ Performance Improvements:**
+
+- Faster responses for general conversation
+- Reduced API calls for non-educational content
+- More efficient agent pipeline activation
+- Better resource management
 
 ## 🔧 Technologies & Stack (Agent-Focused)
 
@@ -227,35 +318,49 @@ python simple_demo.py
 
 Each agent in the system has a **single, well-defined responsibility**:
 
-1. **Language Router Agent**:
+1. **Conversation Router Agent**:
+
+   - **Single Purpose**: Classify input as general conversation or educational content
+   - **Input**: Raw student input (any language)
+   - **Output**: Route decision with immediate response for general chat
+   - **Tools**: Classification algorithms, friendly response generation
+
+2. **Question Clarification Agent**:
+
+   - **Single Purpose**: Identify and clarify unclear educational questions
+   - **Input**: Educational questions (routed from step 1)
+   - **Output**: Clarification prompts or clear question confirmation
+   - **Tools**: Question analysis, clarification question generation
+
+3. **Language Router Agent**:
 
    - **Single Purpose**: Language detection and text routing
-   - **Input**: Raw text from student
+   - **Input**: Clear educational questions
    - **Output**: Normalized text with language metadata
    - **Tools**: Language detection algorithms, text normalization
 
-2. **Question Analyzer Agent**:
+4. **Question Analyzer Agent**:
 
    - **Single Purpose**: Question categorization and analysis
    - **Input**: Normalized text
    - **Output**: Structured analysis (subject, grade, type, concepts)
    - **Tools**: Educational classification algorithms
 
-3. **Knowledge Retriever Agent**:
+5. **Knowledge Retriever Agent**:
 
    - **Single Purpose**: Educational content discovery
    - **Input**: Question analysis results
    - **Output**: Relevant educational content and examples
    - **Tools**: Google Search integration
 
-4. **Solution Generator Agent**:
+6. **Solution Generator Agent**:
 
    - **Single Purpose**: Educational response generation
    - **Input**: Question analysis + Retrieved knowledge
    - **Output**: Pedagogically sound explanation/solution
    - **Tools**: Educational best practices, cultural context
 
-5. **Response Formatter Agent**:
+7. **Response Formatter Agent**:
    - **Single Purpose**: Final response formatting and quality assurance
    - **Input**: Generated solution content
    - **Output**: Polished, student-friendly response
