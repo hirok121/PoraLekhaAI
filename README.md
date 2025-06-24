@@ -343,6 +343,9 @@ pip install -r requirements.txt
 
 # Configure environment
 echo "GOOGLE_API_KEY=your_api_key_here" > .env
+
+# Run this project
+adk web
 ```
 
 ## 💻 Usage Examples & Supported Query Types
