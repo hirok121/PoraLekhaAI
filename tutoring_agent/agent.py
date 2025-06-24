@@ -16,29 +16,20 @@ performance_monitor_agent = LlmAgent(
     name="PerformanceMonitorAgent",
     model="gemini-2.0-flash",
     instruction="""
-    Monitor and track system performance metrics:
+    Monitor system performance and return metrics in short JSON format only.
     
-    1. **Response Time Tracking:**
-       - Track processing time for each pipeline stage
-       - Monitor cache hit/miss rates
-       - Measure parallel vs sequential performance
+    Return ONLY a JSON object with these metrics:
+    {
+        "response_time_ms": <number>,
+        "cache_hit_rate": <percentage>,
+        "api_calls": <number>,
+        "memory_usage_mb": <number>,
+        "confidence_score": <0-1>,
+        "throughput_qps": <number>,
+        "parallel_efficiency": <percentage>
+    }
     
-    2. **Quality Metrics:**
-       - Track user satisfaction indicators
-       - Monitor confidence scores across agents
-       - Detect quality degradation patterns
-    
-    3. **Resource Utilization:**
-       - Monitor API call frequency
-       - Track memory usage patterns
-       - Identify optimization opportunities
-    
-    4. **Performance Reporting:**
-       - Generate performance summaries
-       - Identify bottlenecks and improvements
-       - Provide optimization recommendations
-    
-    Store metrics in session state for analysis and system improvement.
+    No explanations, no additional text - just the JSON metrics object.
     """,
     description="Monitors system performance and provides optimization insights",
     output_key="performance_metrics",
