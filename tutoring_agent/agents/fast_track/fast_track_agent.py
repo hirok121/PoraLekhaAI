@@ -258,16 +258,7 @@ query_classifier_agent = LlmAgent(
     
     **Classification Categories:**
     
-    1. **SIMPLE_EDUCATIONAL** (Route to Fast-Track):
-       - Basic arithmetic operations (+, -, ×, ÷)
-       - Single-step algebraic solutions
-       - Simple unit conversions
-       - Basic geometry area/perimeter calculations
-       - Definition requests for simple terms
-       - Memorized formulas (like quadratic formula, basic physics equations)
-       - Questions answerable in 1-2 sentences without derivation
-    
-    2. **COMPLEX_EDUCATIONAL** (Route to Full Pipeline):
+      1. **COMPLEX_EDUCATIONAL** (Route to Full Pipeline):
        ⚠️ **Mathematical Physics Indicators** (ALWAYS Complex):
        - Parametric equations: x(t), y(t), z(t), r(t) with time parameter
        - Calculus applications: derivatives, integrals, differential equations
@@ -280,24 +271,32 @@ query_classifier_agent = LlmAgent(
        - Particle motion, trajectory analysis, parametric curves
        - Physics problems involving mathematical modeling
        
-       📚 **Other Complex Indicators**:
+       📚 **Other Complex Educational Indicators**:
        - Multi-step problem solving requiring derivations
+       - Word problems with algebraic setup: "The lengths of three sides...", "A rectangle has..."
        - Step-by-step mathematical proofs or explanations
+       - Geometric problems requiring calculations: triangle properties, area/volume problems
+       - Algebraic equations requiring solving: quadratic equations, systems of equations
        - Complex analysis, synthesis, or integration of concepts
        - Problems requiring multiple mathematical techniques
        - Questions needing pedagogical step-by-step teaching
        - Research-heavy topics requiring detailed explanations
        - Advanced chemistry calculations (equilibrium, thermodynamics)
        - Advanced biology processes (genetics, biochemistry)
+       - Problems involving unknown variables that need to be solved for
+       - Mathematical relationships that need to be established or proven
     
-    3. **GENERAL** (Route to General Chat):
-       - Casual conversation and greetings
-       - Social interaction and small talk
-       - Questions about AI capabilities
-       - Non-academic personal topics
-       - Weather, entertainment, general life advice
-    
-    **Mathematical Physics Detection Rules:**
+    2. **GENERAL** (Route to General Chat):
+       💬 **Conversational and Non-Academic Indicators**:
+       - Casual conversation and greetings: "Hello", "How are you?", "Good morning"
+       - Social interaction and small talk: "Nice weather", "Tell me a joke"
+       - Questions about AI capabilities: "What can you do?", "Are you ChatGPT?"
+       - Non-academic personal topics: entertainment, hobbies, personal advice
+       - Weather, current events, sports, entertainment
+       - Motivational or emotional support: "I'm feeling stressed", "Can you encourage me?"
+       - AI identity questions: "What's your name?", "Who created you?"
+       - System functionality questions: "How does this work?", "What subjects do you cover?"
+      **Mathematical Physics Detection Rules:**
     🔍 **HIGH PRIORITY COMPLEX INDICATORS:**
     - ANY mention of parametric equations with functions of t
     - Derivatives or integrals in context (d/dt, ∫, differentiation)
@@ -308,18 +307,33 @@ query_classifier_agent = LlmAgent(
     - Time-dependent mathematical expressions
     - Rate problems requiring calculus
     
-    **Response Format:**
+    🔍 **ADDITIONAL COMPLEX INDICATORS:**
+    - Word problems with algebraic variables: "x", "y", expressions like "(x+1)", "(x-1)"
+    - Geometric problems requiring calculations and setup
+    - Problems asking to "find", "solve", "calculate", "determine" unknown values
+    - Questions involving mathematical relationships and equations
+    - Problems requiring multiple steps or mathematical reasoning
+    - Triangle problems involving side lengths, angles, or properties
+    - Questions that require setting up equations or using formulas
+    - Problems involving unknowns that need algebraic manipulation
+    
+    🔍 **GENERAL CONVERSATION INDICATORS:**
+    - Greetings and social interactions
+    - Questions about AI identity or capabilities
+    - Non-educational personal topics
+    - Casual conversation without academic content
+    - Emotional support or motivational requests
+      **Response Format:**
     ```json
     {
-        "classification": "SIMPLE_EDUCATIONAL|COMPLEX_EDUCATIONAL|GENERAL",
+        "classification": "COMPLEX_EDUCATIONAL|GENERAL",
         "confidence": 0.0-1.0,
         "reasoning": "brief explanation of classification with specific indicators found",
         "estimated_processing_time": "immediate|fast|standard|complex",
         "detected_mathematical_concepts": ["list", "of", "concepts", "if", "any"]
     }
     ```
-    
-    **Examples for Reference:**
+      **Examples for Reference:**
     
     ✅ **COMPLEX_EDUCATIONAL Examples:**
     - "A particle moves along x(t) = 2cos(3t) + t², y(t) = 3sin(2t) - e^(-t/2)..." → COMPLEX (parametric motion)
@@ -327,11 +341,20 @@ query_classifier_agent = LlmAgent(
     - "Derive the equation for..." → COMPLEX (requires derivation)
     - "Solve the differential equation dy/dx = ..." → COMPLEX (calculus)
     - "A projectile is launched with initial velocity..." → COMPLEX (physics kinematics)
+    - "The lengths of the three sides of a right-angled triangle are (x-1) cm, x cm, and (x+1) cm. What is the length of the hypotenuse?" → COMPLEX (algebraic word problem requiring multi-step solution)
+    - "A rectangle has length (2x+3) and width (x-1). If the area is 50, find x." → COMPLEX (algebraic setup and solving)
+    - "Solve the quadratic equation 2x² + 5x - 3 = 0 step by step" → COMPLEX (multi-step algebraic process)
+    - "Prove that the sum of angles in a triangle is 180°" → COMPLEX (geometric proof)
+    - "Find the area of a triangle with sides 5, 12, and 13 cm" → COMPLEX (requires formula application and calculation)
     
-    ✅ **SIMPLE_EDUCATIONAL Examples:**
-    - "What is 2 + 3?" → SIMPLE (basic arithmetic)
-    - "Convert 5 meters to centimeters" → SIMPLE (unit conversion)
-    - "What is the quadratic formula?" → SIMPLE (memorized formula)
+    ✅ **GENERAL Examples:**
+    - "Hello, how are you?" → GENERAL (greeting)
+    - "What's your name?" → GENERAL (AI identity question)
+    - "Can you help me with my studies?" → GENERAL (general inquiry without specific academic content)
+    - "I'm feeling stressed about exams" → GENERAL (emotional support)
+    - "What can you do?" → GENERAL (AI capabilities question)
+    - "Good morning!" → GENERAL (social greeting)
+    - "Tell me a joke" → GENERAL (entertainment request)
     
     **Critical Rule:** When in doubt between SIMPLE and COMPLEX, especially with mathematical content, err on the side of COMPLEX to ensure proper detailed analysis.
     """,

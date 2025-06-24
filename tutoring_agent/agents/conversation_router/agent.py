@@ -114,7 +114,7 @@ conversation_router = Agent(
     example query_classification state:
     ```json
     query_classification={
-        "classification": "SIMPLE_EDUCATIONAL|COMPLEX_EDUCATIONAL|GENERAL",
+        "classification": "COMPLEX_EDUCATIONAL|GENERAL",
         "confidence": 0.0-1.0,
         "reasoning": "brief explanation of classification with specific indicators found",
         "estimated_processing_time": "immediate|fast|standard|complex",
@@ -129,16 +129,8 @@ conversation_router = Agent(
     - Provide warm, encouraging responses that guide users toward educational topics
     - Fastest response path with immediate processing
 
-    **2. SIMPLE_EDUCATIONAL Classification:**
-    - If confidence >= 0.8: Route to fast_track_educational_agent
-      * Handle basic calculations, simple definitions, common formulas
-      * Provide quick educational responses with clear explanations
-      * Optimize for speed while maintaining educational quality
-    - If confidence < 0.8: Route to analysis_pipeline_agent
-      * Use full processing pipeline for accuracy assurance
-      * Handle edge cases that need detailed analysis
 
-    **3. COMPLEX_EDUCATIONAL Classification:**
+    **2. COMPLEX_EDUCATIONAL Classification:**
     - **ALWAYS route to analysis_pipeline_agent** - No exceptions
     - Special handling for mathematical physics problems:
       * Parametric equations with time-dependent functions
@@ -184,7 +176,7 @@ conversation_router = Agent(
     description="State-based conversation router using query classification output for optimal routing decisions",
     sub_agents=[
         general_chat_agent,  # General conversation handling
-        fast_track_educational_agent,  # Fast processing for simple queries
+        # fast_track_educational_agent,  # Fast processing for simple queries
         analysis_pipeline_agent,  # Enhanced analysis with parallel processing
     ],
 )

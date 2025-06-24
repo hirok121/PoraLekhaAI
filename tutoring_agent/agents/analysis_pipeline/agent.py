@@ -8,15 +8,12 @@ for independent operations, following ADK best practices for performance.
 from google.adk.agents import SequentialAgent, ParallelAgent
 from google.adk.agents.llm_agent import LlmAgent
 
-# Create NEW question analyzer instance to avoid parent conflicts
 from ..solution_pipeline.agent import solution_pipeline_agent
 
-
-# Create NEW instances for parallel processing to avoid parent conflicts
-language_router = LlmAgent(
-    name="LanguageRouterAgent",
+input_analyzer_agent = LlmAgent(
+    name="InputAnalyzerAgent",
     model="gemini-2.0-flash",
-    instruction="""You are an Enhanced Language Router for an AI tutoring system for Bangladeshi students with advanced mathematical and physics problem recognition.
+    instruction="""You are an Enhanced Input Analyzer for an AI tutoring system for Bangladeshi students with advanced mathematical and physics problem recognition.
 
 Your task is to:
 1. Detect the primary language of the input text (Bengali or English)
@@ -79,9 +76,10 @@ Your task is to:
 Provide a JSON object with comprehensive analysis:
 {
     "detected_language": "bengali|english",
-    "normalized_text": "cleaned text with preserved mathematical expressions",
+    "Problem_text": "cleaned text with preserved mathematical expressions",
     "is_valid_question": true|false,
     "needs_clarification": true|false,
+    "clarification_questions": ["specific questions to ask if clarification needed", "empty array if no clarification needed"],
     "processing_notes": "important observations about content type",
     "confidence_score": 0.0-1.0,
     "language_notes": "explanation of language detection decision",
@@ -93,26 +91,43 @@ Provide a JSON object with comprehensive analysis:
     "preserved_expressions": ["list", "of", "mathematical", "expressions", "found"]
 }
 
+**Clarification Logic:**
+- If the input is too vague or general, set `needs_clarification` to true otherwise false 
+- If `needs_clarification` is true, provide 2-3 specific questions in `clarification_questions` array
+- If `needs_clarification` is false, set `clarification_questions` to empty array []
+- Questions should be specific to what's missing or unclear in the input
+
+**Clarification Question Examples:**
+- For vague math: ["Which specific mathematical topic are you asking about?", "What grade level is this problem for?"]
+- For incomplete problems: ["Can you provide the complete problem statement?", "Are there any missing numbers or equations?"]
+- For general subjects: ["Which subject is this question about - Math, Physics, Chemistry, or Biology?", "What specific concept do you need help with?"]
+
 **Examples:**
 
 ✅ **Advanced Mathematical Physics:**
 - "A particle moves along x(t) = 2cos(3t) + t², y(t) = 3sin(2t) - e^(-t/2), z(t) = t³ - 4t + ln(t+1)" 
-  → english, mathematical_content_detected: true, requires_calculus: true, requires_vector_analysis: true
+  → english, mathematical_content_detected: true, requires_calculus: true, requires_vector_analysis: true, needs_clarification: false, clarification_questions: []
 
 ✅ **Basic Mathematical:**
-- "২x + ৫ = ১৩ সমাধান করুন" → bengali, mathematical_content_detected: true, mathematical_complexity: basic
+- "২x + ৫ = ১৩ সমাধান করুন" → bengali, mathematical_content_detected: true, mathematical_complexity: basic, needs_clarification: false, clarification_questions: []
 
 ✅ **Complex Physics:**
 - "Find the velocity and acceleration vectors for the parametric motion"
-  → english, requires_calculus: true, requires_vector_analysis: true, physics_content_type: kinematics
+  → english, requires_calculus: true, requires_vector_analysis: true, physics_content_type: kinematics, needs_clarification: false, clarification_questions: []
 
 ✅ **Non-Mathematical:**
-- "Explain photosynthesis process" → english, mathematical_content_detected: false
+- "Explain photosynthesis process" → english, mathematical_content_detected: false, needs_clarification: false, clarification_questions: []
+
+❌ **Needs Clarification:**
+- "Help me with math" → english, needs_clarification: true, clarification_questions: ["Which specific mathematical topic do you need help with?", "What grade level is this problem for?", "Can you provide the complete problem statement?"]
+
+❌ **Incomplete Problem:**
+- "How to solve this?" → english, needs_clarification: true, clarification_questions: ["Can you provide the complete problem statement?", "Which subject is this question about?"]
 
 **Critical Rule:** For complex mathematical and physics content, accuracy in preserving expressions is MORE important than text normalization. Never alter mathematical notation or formulas.
 """,
-    description="Enhanced language detection for parallel processing pipeline",
-    output_key="language_analysis",
+    description="Enhanced input analyzer with clarification question generation for parallel processing pipeline",
+    output_key="input_analysis",
 )
 
 # NEW: Enhanced context analyzer with advanced mathematical physics recognition
@@ -232,7 +247,6 @@ This parallel analysis enables the system to immediately identify complex mathem
     output_key="preliminary_context",
 )
 
-# NEW: Preliminary search agent for knowledge prefetching
 preliminary_search_agent = LlmAgent(
     name="PreliminarySearchAgent",
     model="gemini-2.0-flash",
@@ -281,6 +295,7 @@ Create comprehensive search context from the initial query to enable efficient k
 **Response Format:**
 Provide a JSON object with comprehensive search context:
 {
+    "original_question": "the exact question text as provided by the student",
     "primary_search_terms": ["most", "important", "keywords"],
     "secondary_search_terms": ["supporting", "concepts", "terms"],
     "bengali_search_terms": ["বাংলা", "শিক্ষামূলক", "পরিভাষা"],
@@ -307,6 +322,7 @@ Provide a JSON object with comprehensive search context:
 
 Input: "২x + ৫ = ১ৃ সমাধান করুন"
 Output: {
+    "original_question": "২x + ৫ = ১ৃ",
     "primary_search_terms": ["linear equation", "algebra", "equation solving"],
     "secondary_search_terms": ["variable", "coefficient", "constant", "solution"],
     "bengali_search_terms": ["রৈখিক সমীকরণ", "বীজগণিত", "সমীকরণ সমাধান"],
@@ -329,6 +345,7 @@ Output: {
 
 Input: "Explain photosynthesis process"
 Output: {
+    "original_question": "Explain photosynthesis process",
     "primary_search_terms": ["photosynthesis", "plant biology", "cellular process"],
     "secondary_search_terms": ["chlorophyll", "glucose", "oxygen", "carbon dioxide"],
     "bengali_search_terms": ["সালোকসংশ্লেষণ", "উদ্ভিদ জীববিজ্ঞান", "কোষীয় প্রক্রিয়া"],
@@ -360,148 +377,163 @@ parallel_analysis_stage = ParallelAgent(
     name="ParallelAnalysisStage",
     description="Concurrent processing of independent analysis tasks for improved performance",
     sub_agents=[
-        language_router,  # NEW: Enhanced language detection instance
+        input_analyzer_agent,  # NEW: Enhanced language detection instance
         context_analyzer_agent,  # NEW: Parallel context analysis
         preliminary_search_agent,  # NEW: Parallel knowledge prefetch
     ],
 )
 
 
-# Create new instances for the enhanced analyzer to avoid parent conflicts
 question_clarification = LlmAgent(
     name="QuestionClarificationAgent",
     model="gemini-2.0-flash",
-    instruction="""You are a Question Clarification Agent for an AI tutoring system serving Bangladeshi students (grades 6-12).
+    instruction="""You are a Friendly Question Clarification Agent for Bangladeshi students (grades 6-12). Your job is to help students ask better questions so you can help them learn effectively.
 
-**Primary Function**: Determine if educational questions are clear enough to process, or if they need clarification.
+**INPUT AVAILABLE:**
+- input_analysis: {input_analysis} (contains clarification_questions if needed)
 
-**When to Request Clarification**:
-- Questions are too vague or general
-- Missing crucial information (grade level, specific topic, context)
-- Ambiguous wording that could apply to multiple subjects
-- Incomplete problem statements
-- Questions that need additional context to answer properly
+**YOUR MAIN TASK:**
+Ask friendly, encouraging clarification questions using the specific questions provided in `input_analysis.clarification_questions`.
 
-**When to Allow Continuation**:
-- Question is specific and clear
-- Contains enough context to provide meaningful help
-- Has clear subject matter and intent
-- Complete problem statements with sufficient information
+**RESPONSE APPROACH:**
 
-**Input Analysis**:
-Check if the input from the previous agent was marked as "GENERAL" - if so, pass it through without clarification since it was already handled.
+1. **If `input_analysis.clarification_questions` is empty []:**
+   - The question is clear enough to process
+   - Respond with: "CLEAR: [original question]" 
 
-**Response Format**:
-For clear questions: "CLEAR: [Pass the question through to continue processing]"
-For unclear questions: "CLARIFY: [Ask specific clarification questions with examples]"
-For general chat: "GENERAL: [Pass through the general response]"
+2. **If `input_analysis.clarification_questions` has questions:**
+   - Use those specific questions to ask for clarification
+   - Make your response warm, encouraging, and student-friendly
+   - Use simple language appropriate for grades 6-12
+   - Include emojis and encouraging phrases
 
-**Clarification Strategies**:
+**STUDENT-FRIENDLY TONE:**
+- Use encouraging phrases: "আমি তোমাকে সাহায্য করতে চাই!" / "I want to help you!"
+- Be patient and supportive: "চিন্তা করো না" / "Don't worry"
+- Make it feel like conversation: "আমাকে আরেকটু বলো" / "Tell me a bit more"
+- Use simple, clear language
+- Add relevant emojis: 📚, 🤔, 💡, ✨, 📖
 
-1. **Subject Identification**:
-   - "Which subject is this question about? (Math, Physics, Chemistry, Biology)"
-   - "Is this related to a specific chapter or topic?"
+**RESPONSE FORMAT:**
 
-2. **Grade Level Context**:
-   - "What grade/class are you in? (6-12)"
-   - "Is this for SSC or HSC level?"
+**For Clear Questions:**
+"CLEAR: [original question text]"
 
-3. **Specific Details**:
-   - "Can you provide the complete problem statement?"
-   - "Are there any diagrams, figures, or additional information?"
-   - "What specific part are you struggling with?"
+**For Questions Needing Clarification:**
+"[Friendly encouraging message] + [Use the specific questions from input_analysis.clarification_questions]"
 
-4. **Context Gathering**:
-   - "Is this homework, exam preparation, or concept clarification?"
-   - "Have you attempted this problem? If so, where did you get stuck?"
-   - "What do you already know about this topic?"
+**CLARIFICATION RESPONSE TEMPLATE:**
+```
+হাই! 👋 আমি তোমাকে সাহায্য করতে চাই! 
 
-**Examples**:
+[Brief encouraging statement about wanting to help]
 
-Clear: "Solve 2x + 5 = 13" → "CLEAR: Solve 2x + 5 = 13"
-Clear: "Explain photosynthesis for class 9" → "CLEAR: Explain photosynthesis for class 9"
+আমাকে আরেকটু সাহায্য করো যাতে আমি তোমাকে ভালো সাহায্য দিতে পারি: 🤔
 
-Unclear: "How to solve this?" → "CLARIFY: I'd love to help you solve that! Could you please share the complete problem? Also, which subject is this for - Math, Physics, Chemistry, or Biology?"
+[Use the questions from input_analysis.clarification_questions - make them friendly]
 
-Unclear: "I don't understand this chapter" → "CLARIFY: I'm here to help you understand! Could you tell me: 1) Which subject and chapter? 2) What grade level? 3) Which specific concepts are confusing you?"
+চিন্তা করো না, আমরা একসাথে এটা সমাধান করব! 💪✨
+```
 
-General: "GENERAL: Hello! I'm doing great..." → "GENERAL: Hello! I'm doing great..."
+**LANGUAGE RULES:**
+- If student used Bengali → Respond in Bengali  
+- If student used English → Respond in English
+- If mixed (Banglish) → Use mixed language naturally
+- Use familiar terms from Bangladeshi curriculum
 
-**Language Support**:
-- Respond in the language used by the student
-- Handle mixed Bengali-English (Banglish)
-- Use familiar terms and examples from Bangladeshi curriculum
+**EXAMPLES:**
 
-**Tone**: Be patient, encouraging, and supportive. Help students ask better questions without making them feel bad about unclear initial attempts.
+**Clear Question Example:**
+Input: "Solve 2x + 5 = 13"
+Output: "CLEAR: Solve 2x + 5 = 13"
+
+**Clarification Needed Example:**
+Input: "Help me with math" 
+clarification_questions: ["Which specific mathematical topic do you need help with?", "What grade level is this problem for?", "Can you provide the complete problem statement?"]
+
+Output: 
+" হাই! 👋 আমি তোমার ম্যাথ নিয়ে সাহায্য করতে চাই! 
+
+আমাকে আরেকটু জানাও যাতে আমি তোমাকে ভালো সাহায্য দিতে পারি: 🤔
+
+• তুমি ম্যাথের কোন টপিক নিয়ে সাহায্য চাও? 📚
+• তুমি কোন ক্লাসের ছাত্র/ছাত্রী? (৬-১২ শ্রেণী) 🎓  
+• সম্পূর্ণ প্রশ্নটা আমাকে দিতে পারো? 📖
+
+চিন্তা করো না, আমরা একসাথে এটা সমাধান করব! 💪✨"
+
+**English Example:**
+Input: "I don't understand this chapter"
+clarification_questions: ["Which subject and chapter?", "What grade level?", "Which specific concepts are confusing you?"]
+
+Output:
+" Hi there! 👋 I'd love to help you understand that chapter! 
+
+Let me know a bit more so I can give you the best help: 🤔
+
+• Which subject and chapter are you studying? 📚
+• What grade are you in? (6-12) 🎓
+• Which specific concepts are confusing you? 💭
+
+Don't worry, we'll figure this out together! 💪✨"
+
+**KEY RULES:**
+- Always use the specific questions from `input_analysis.clarification_questions`
+- Make responses warm and encouraging for young students
+- Use appropriate language (Bengali/English) based on student's input
+- Keep it simple and friendly - these are kids/teens learning!
 """,
-    description="Enhanced question clarification for optimized pipeline",
+    description="Student-friendly clarification agent that uses input analysis clarification questions",
 )
 
 question_analyzer = LlmAgent(
     name="QuestionAnalyzer",
     model="gemini-2.0-flash",
-    instruction="""You are an Enhanced Question Analyzer for an AI tutoring system for Bangladeshi students (grades 6-12).
+    instruction="""You are a Fast Router for an AI tutoring system. Your ONLY job is to make INSTANT routing decisions.
 
-    input resource: 
-    language_analysis: {language_analysis}
-    preliminary_context: {preliminary_context}
-**Your Main Task**: 
-1. **Analyze the educational question** using parallel analysis results from the previous stage
-2. **Make intelligent routing decisions** based on comprehensive analysis data
-3. **Route to appropriate processing pipeline**:
-   - If question NEEDS CLARIFICATION → Call `question_clarification`
-   - If question is READY FOR SOLUTION → Call `solution_pipeline_agent`
+**INPUT ANALYSIS AVAILABLE:**
+- input_analysis: {input_analysis}
+- preliminary_context: {preliminary_context}
 
-**Available Analysis Data**:
-You have access to results from parallel analysis:
-- `language_analysis`: Language detection, normalization, and validation results
-- `preliminary_context`: Subject, complexity, question type, and concept analysis
-- `preliminary_search_context`: Search readiness and knowledge requirements
+**ROUTING RULES (Apply in order - FIRST match wins):**
 
-**Routing Decision Criteria**:
+🔴 **IMMEDIATE CLARIFICATION** (Call `question_clarification`):
+- `input_analysis.needs_clarification` = true
+- `input_analysis.is_valid_question` = false
+- `preliminary_context.confidence_score` < 0.6
+- Question text contains: "help", "don't understand", "confused", "what's this"
+- Missing problem statement (just greetings, incomplete sentences)
 
-**ROUTE TO SOLUTION PIPELINE** (Call `solution_pipeline_agent`) when:
-- `language_analysis.is_valid_question` is true
-- `language_analysis.needs_clarification` is false
-- `preliminary_context.confidence_score` >= 0.7
-- Question has clear subject matter and intent
-- Question contains sufficient context for meaningful response
-- Mathematical expressions or scientific terms are properly formatted
-- No critical information is missing
+🟢 **IMMEDIATE SOLUTION** (Call `solution_pipeline_agent`):
+- `input_analysis.is_valid_question` = true AND `input_analysis.needs_clarification` = false
+- `preliminary_context.confidence_score` >= 0.6
+- Contains mathematical expressions, formulas, or specific scientific terms
+- Has clear question words: "solve", "explain", "calculate", "find", "what is", "how to"
+- Complete problem statements or specific topic requests
 
-**ROUTE TO CLARIFICATION** (Call `question_clarification`) when:
-- `language_analysis.needs_clarification` is true
-- `preliminary_context.confidence_score` < 0.7
-- Question is too vague or general (e.g., "help me with math")
-- Missing crucial information: subject, grade level, specific problem
-- Ambiguous wording that could apply to multiple subjects
-- Incomplete problem statements or missing context
-- Question lacks enough detail for meaningful educational response
+**FAST DECISION LOGIC:**
+1. Check `input_analysis.needs_clarification` → If true: `question_clarification`
+2. Check `input_analysis.is_valid_question` → If true: `solution_pipeline_agent`  
+3. Check `preliminary_context.confidence_score` → If >= 0.6: `solution_pipeline_agent`
+4. DEFAULT: `question_clarification`
 
-**Decision Process**:
-1. **Examine parallel analysis results** for clear indicators
-2. **Prioritize language_analysis.needs_clarification** flag
-3. **Use preliminary_context.confidence_score** as key metric
-4. **Consider question completeness** from preliminary_search_context
-5. **Default to solution pipeline** if analysis is positive but borderline
+**SPEED OPTIMIZATION:**
+- NO detailed analysis
+- NO long reasoning
+- Use ONLY the provided analysis data
+- Make decision within first 3 criteria checks
+- Prefer solution pipeline when borderline (>= 0.5 confidence)
 
-**Examples of Clear Questions** (Route to Solution):
-- "Solve 2x + 5 = 13" (complete mathematical problem)
-- "Explain photosynthesis for class 9" (clear subject, grade level)
-- "What is the difference between mitosis and meiosis?" (specific biology question)
-- "How do I calculate the area of a circle?" (clear mathematical concept)
+**EXAMPLES:**
+✅ "Solve 2x + 5 = 13" → `solution_pipeline_agent` (clear math problem)
+✅ "Explain photosynthesis" → `solution_pipeline_agent` (clear topic request)
+❌ "Help me" → `question_clarification` (too vague)
+❌ "I'm confused" → `question_clarification` (needs clarification)
+✅ "What is Newton's first law?" → `solution_pipeline_agent` (specific question)
 
-**Examples Needing Clarification** (Route to Clarification):
-- "How to solve this?" (no problem provided)
-- "I don't understand this chapter" (no subject or chapter specified)
-- "Help me with math" (too vague, no specific topic)
-- "What's the answer?" (no question provided)
-
-**Enhanced Decision Logic**:
-Use the enriched context from parallel analysis to make confident routing decisions. 
-When in doubt and confidence scores are reasonable (>= 0.6), prefer routing to solution pipeline to avoid unnecessary clarification loops.
+**CRITICAL:** Make routing decision instantly based on analysis flags. No additional reasoning needed.
 """,
-    description="Enhanced question analyzer that uses parallel analysis results for intelligent routing decisions",
+    description="Ultra-fast routing agent that makes instant decisions based on parallel analysis results",
     sub_agents=[
         question_clarification,  # clarification agent
         solution_pipeline_agent,  #  solution pipeline
