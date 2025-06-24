@@ -1,8 +1,8 @@
-# 🧠 PoralekhAI - Advanced Multi-Agent Tutoring System
+# 🧠 PoralekhaAI - Advanced Multi-Agent Tutoring System
 
 ## 🚀 Overview
 
-**PoralekhAI** is a sophisticated AI-powered tutoring system designed specifically for Bangladeshi students (grades 6-12). Built on Google's Agent Development Kit (ADK), it employs an advanced multi-agent architecture with intelligent orchestration to deliver personalized educational support in mathematics, physics, chemistry, and biology.
+**PoralekhaAI** is a sophisticated AI-powered tutoring system designed specifically for Bangladeshi students (grades 6-12). Built on Google's Agent Development Kit (ADK), it employs an advanced multi-agent architecture with intelligent orchestration to deliver personalized educational support in mathematics, physics, chemistry, and biology.
 
 ### 🎯 Core Mission
 
@@ -417,7 +417,7 @@ response = root_agent.process(test_chat)
 ### 🏗️ Project Structure
 
 ```
-poralekhAI/
+poralekhaAI/
 ├── 📁 tutoring_agent/           # Main application package
 │   ├── 📄 __init__.py
 │   ├── 🎯 agent.py              # Root agent orchestrator
